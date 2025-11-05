@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission 03: The Grid Gauntlet</title>
+    <!-- Load Tailwind CSS for utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom GTA: San Andreas-inspired theme colors and fonts */
+        :root {
+            --sa-green: #00A800;
+            --sa-gold: #FFD700;
+            --sa-dark: #121212;
+            --sa-grey: #222222;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--sa-dark);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* --- GTA: SA Typography Style (Blocky/Gang Tag feel) --- */
+        .gta-title {
+            font-family: 'Arial Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--sa-gold);
+            text-shadow: 
+                -1px -1px 0 var(--sa-dark),
+                1px -1px 0 var(--sa-dark),
+                -1px 1px 0 var(--sa-dark),
+                1px 1px 0 var(--sa-dark); 
+        }
+
+        .sa-button {
+            background-color: var(--sa-green);
+            color: var(--sa-dark); 
+            font-weight: bold; 
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.15s, transform 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .sa-button:hover {
+            background-color: #008800; 
+            transform: scale(1.02);
+        }
+
+        /* --- Grid & Asset Styles --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 16px; /* 4 units of gap/gutter */
+            padding: 16px;
+            background-color: var(--sa-dark);
+            border: 3px dashed var(--sa-gold);
+            min-height: 150px;
+            align-items: start;
+        }
+
+        .asset-block {
+            background-color: var(--sa-grey);
+            color: white;
+            padding: 20px 10px;
+            border: 2px solid var(--sa-dark);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.5); /* 3D effect */
+        }
+        
+        /* Asset pool styles */
+        .asset-pool .asset-block {
+            transform: translateY(0);
+            border-bottom: 4px solid var(--sa-green);
+        }
+
+        .asset-pool .asset-block.selected {
+            background-color: var(--sa-green);
+            color: var(--sa-dark);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 0 rgba(0, 0, 0, 0.5), 0 0 10px var(--sa-gold); /* Lifted and glowing */
+        }
+
+        /* Target grid styles */
+        .target-slot {
+            height: 100px;
+            background-color: rgba(0, 168, 0, 0.1); /* Light green tint */
+            border: 1px dashed var(--sa-green);
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.75rem;
+            color: gray;
+        }
+
+        /* The blocks for the target row */
+        .grid-block-3 { grid-column: span 3 / span 3; }
+        .grid-block-4 { grid-column: span 4 / span 4; }
+        .grid-block-5 { grid-column: span 5 / span 5; }
+        .grid-block-6 { grid-column: span 6 / span 6; }
+        
+        .status-message {
+            font-family: 'Arial Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-height: 2rem;
+        }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <header class="text-center mb-8 w-full max-w-4xl">
+        <h1 class="gta-title text-3xl md:text-5xl">THE GRID GAUNTLET</h1>
+        <p class="gta-subtitle text-lg text-gray-400 mt-2">Mission 03: Assemble a Perfect 12-Column Layout</p>
+    </header>
+
+    <main class="w-full max-w-4xl bg-gray-800 p-6 md:p-8 rounded-lg shadow-2xl border border-gray-700">
+        
+        <!-- Mission Objective / Target Panel -->
+        <div class="mb-8 p-4 bg-gray-900 border-l-4 border-l-gray-600 rounded">
+            <h2 class="text-xl font-bold text-sa-gold mb-2">TARGET ACQUISITION: GRID HARMONY</h2>
+            <p class="text-gray-300 text-sm">
+                The layout for the new campaign needs to be perfectly balanced on a 12-column grid. Select **exactly three** asset blocks from the pool below that will completely fill one row (sum to 12 columns).
+            </p>
+            <div class="mt-3 text-sm font-mono text-sa-green">
+                Goal: Select 3 blocks, total width = 12 columns.
+            </div>
+        </div>
+
+        <!-- Asset Pool (Clickable Blocks) -->
+        <h3 class="gta-title text-base mb-4 text-sa-gold">ASSET POOL: SELECT YOUR BLOCKS</h3>
+        <div id="asset-pool" class="grid grid-cols-4 gap-4 mb-10 asset-pool">
+            
+            <!-- Data-cols holds the column width -->
+            <div class="asset-block" data-cols="3">3 COLUMNS (NAV)</div>
+            <div class="asset-block" data-cols="4">4 COLUMNS (INFO)</div>
+            <div class="asset-block" data-cols="5">5 COLUMNS (HERO)</div>
+            <div class="asset-block" data-cols="6">6 COLUMNS (MEDIA)</div>
+            
+        </div>
+        
+        <!-- Current Layout Status / Target Container -->
+        <h3 class="gta-title text-base mb-4 text-sa-green">CURRENT LAYOUT (12-COLUMN GRID)</h3>
+        <div id="current-layout" class="grid-container">
+            <div id="slot-placeholder" class="grid-column: span 12 / span 12 target-slot">
+                SELECTED BLOCKS WILL APPEAR HERE. CURRENT WIDTH: <span id="current-width">0</span>/12
+            </div>
+        </div>
+        
+        <!-- Feedback and Actions -->
+        <div class="text-center mt-8">
+            <p id="status-message" class="status-message text-xl text-sa-gold mb-4">AWAITING LAYOUT ASSEMBLY...</p>
+            <button onclick="checkLayout()" class="sa-button transition duration-300 hover:scale-[1.05] w-full md:w-1/2">
+                ASSESS LAYOUT INTEGRITY
+            </button>
+        </div>
+
+    </main>
+    
+    <!-- Navigation Back -->
+    <a href="index.html" class="sa-button mt-8 text-sm px-4 py-2 hover:bg-gray-700 hover:text-sa-gold transition duration-150" style="background-color: var(--sa-grey); border: 1px solid var(--sa-gold);">
+        &larr; BACK TO MISSION BRIEFING
+    </a>
+
+
+    <script>
+        const assetPool = document.getElementById('asset-pool');
+        const currentLayout = document.getElementById('current-layout');
+        const statusMessage = document.getElementById('status-message');
+        const currentWidthDisplay = document.getElementById('current-width');
+        const slotPlaceholder = document.getElementById('slot-placeholder');
+
+        // Target: 3 blocks, total width 12. Solution: 3 + 4 + 5 = 12.
+        const TARGET_COUNT = 3;
+        const TARGET_WIDTH = 12;
+
+        let selectedBlocks = [];
+        
+        // Custom colors for the alert box
+        const SA_GREEN = '#00A800';
+        const SA_GOLD = '#FFD700';
+        const SA_DARK = '#121212';
+        const SA_GREY = '#222222';
+        
+        /**
+         * Custom alert function (as alert() is forbidden) - SA themed.
+         */
+        function alert(message) {
+            console.log("Game Message:", message);
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[2000]';
+            overlay.innerHTML = `
+                <div style="background-color: ${SA_GREY}; border-color: ${SA_GREEN};" class="p-8 rounded-lg shadow-2xl border-2 max-w-sm w-full text-center transform scale-95 transition duration-300">
+                    <h3 style="color: ${SA_GOLD};" class="text-xl font-bold mb-4">GROVE STREET DISPATCH</h3>
+                    <p class="text-white mb-6">${message}</p>
+                    <button style="background-color: ${SA_GREEN}; color: ${SA_DARK};" class="sa-button uppercase" onclick="this.parentNode.parentNode.remove()">
+                        ROGER THAT
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        /**
+         * Handles clicking on an asset block to select/deselect it.
+         */
+        assetPool.addEventListener('click', (event) => {
+            const block = event.target.closest('.asset-block');
+            if (!block) return;
+
+            const cols = parseInt(block.getAttribute('data-cols'));
+            
+            if (block.classList.contains('selected')) {
+                // Deselect: Remove from array and style
+                block.classList.remove('selected');
+                const index = selectedBlocks.indexOf(cols);
+                if (index > -1) selectedBlocks.splice(index, 1);
+            } else {
+                // Select: Add to array and style
+                if (selectedBlocks.length < TARGET_COUNT) {
+                    block.classList.add('selected');
+                    selectedBlocks.push(cols);
+                } else {
+                    statusMessage.textContent = `TOO MANY ASSETS! MAX ${TARGET_COUNT} BLOCKS PER ROW.`;
+                    statusMessage.classList.remove('text-sa-green');
+                    statusMessage.classList.add('text-sa-gold');
+                    return;
+                }
+            }
+            
+            updateLayoutDisplay();
+        });
+
+        /**
+         * Renders the selected blocks inside the current layout container.
+         */
+        function updateLayoutDisplay() {
+            // Remove all existing blocks/placeholders
+            currentLayout.innerHTML = '';
+
+            if (selectedBlocks.length === 0) {
+                // Show placeholder if nothing is selected
+                currentLayout.appendChild(slotPlaceholder);
+                currentLayout.style.display = 'block'; // Ensure it doesn't try to grid an empty state
+            } else {
+                currentLayout.style.display = 'grid'; // Ensure grid display for blocks
+                let currentWidth = 0;
+
+                // Render the selected blocks
+                selectedBlocks.forEach(cols => {
+                    currentWidth += cols;
+                    const blockElement = document.createElement('div');
+                    blockElement.className = `asset-block grid-block-${cols}`;
+                    blockElement.textContent = `${cols} COLUMNS`;
+                    blockElement.style.borderColor = SA_GOLD; // Style them to be distinct in the grid
+                    blockElement.style.backgroundColor = SA_GREY;
+                    currentLayout.appendChild(blockElement);
+                });
+                
+                // Update placeholder content with current status
+                slotPlaceholder.querySelector('#current-width').textContent = currentWidth;
+                
+                // If the width is not 12, add a warning block to show remaining space
+                if (currentWidth !== TARGET_WIDTH) {
+                    const remaining = TARGET_WIDTH - currentWidth;
+                    const statusBlock = document.createElement('div');
+                    statusBlock.className = 'target-slot';
+                    if (remaining > 0 && remaining <= 12) {
+                        // Underflow - show gap
+                        statusBlock.style.gridColumn = `span ${remaining} / span ${remaining}`;
+                        statusBlock.textContent = `${remaining} COLUMNS REMAINING (GAP)`;
+                        statusBlock.style.backgroundColor = 'rgba(255, 215, 0, 0.1)';
+                        statusBlock.style.borderColor = SA_GOLD;
+                        currentLayout.appendChild(statusBlock);
+                    } else if (remaining < 0) {
+                        // Overflow - show error
+                        statusBlock.style.gridColumn = 'span 12 / span 12';
+                        statusBlock.textContent = `LAYOUT OVERFLOW: ${Math.abs(remaining)} COLUMNS TOO WIDE!`;
+                        statusBlock.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
+                        statusBlock.style.borderColor = 'red';
+                        currentLayout.appendChild(statusBlock);
+                    }
+                }
+            }
+            
+            // Recalculate and update the current width display text
+            const totalWidth = selectedBlocks.reduce((sum, cols) => sum + cols, 0);
+            currentWidthDisplay.textContent = totalWidth;
+
+            // Reset status message
+            if (selectedBlocks.length > 0) {
+                statusMessage.textContent = "LAYOUT PENDING ASSESSMENT...";
+                statusMessage.classList.remove('text-sa-green');
+                statusMessage.classList.add('text-sa-gold');
+            } else {
+                statusMessage.textContent = "AWAITING LAYOUT ASSEMBLY...";
+            }
+        }
+
+        /**
+         * Checks if the selected blocks meet the mission criteria.
+         */
+        function checkLayout() {
+            const totalWidth = selectedBlocks.reduce((sum, cols) => sum + cols, 0);
+            const blockCount = selectedBlocks.length;
+
+            if (blockCount !== TARGET_COUNT) {
+                statusMessage.textContent = `FAIL: INCORRECT BLOCK COUNT. NEED EXACTLY ${TARGET_COUNT}.`;
+                statusMessage.classList.remove('text-sa-green');
+                statusMessage.classList.add('text-sa-gold');
+            } else if (totalWidth !== TARGET_WIDTH) {
+                const diff = TARGET_WIDTH - totalWidth;
+                if (diff > 0) {
+                    statusMessage.textContent = `FAIL: UNDERFLOW. MISSING ${diff} COLUMNS.`;
+                } else {
+                    statusMessage.textContent = `FAIL: OVERFLOW. ${Math.abs(diff)} COLUMNS TOO WIDE.`;
+                }
+                statusMessage.classList.remove('text-sa-green');
+                statusMessage.classList.add('text-sa-gold');
+            } else {
+                // WIN condition
+                statusMessage.textContent = "GRID SECURED! PERFECT 12-COLUMN ALIGNMENT ACHIEVED.";
+                statusMessage.classList.remove('text-sa-gold');
+                statusMessage.classList.add('text-sa-green');
+                
+                // Show custom alert message
+                alert('Mission Complete! The Grid Gauntlet is passed. Layout integrity is restored. You are now a certified Grove Street Design Lead!');
+            }
+        }
+
+        // Initialize the game when the page loads
+        window.onload = updateLayoutDisplay;
+    </script>
+</body>
+</html>

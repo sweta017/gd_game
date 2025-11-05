@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission 02: The Font Fugitive</title>
+    <!-- Load Tailwind CSS for utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom GTA: San Andreas-inspired theme colors and fonts */
+        :root {
+            --sa-green: #00A800;
+            --sa-gold: #FFD700;
+            --sa-dark: #121212;
+            --sa-grey: #222222;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--sa-dark);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* --- GTA: SA Typography Style (Blocky/Gang Tag feel) --- */
+        .gta-title {
+            font-family: 'Arial Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--sa-gold);
+            text-shadow: 
+                -1px -1px 0 var(--sa-dark),
+                1px -1px 0 var(--sa-dark),
+                -1px 1px 0 var(--sa-dark),
+                1px 1px 0 var(--sa-dark); 
+        }
+
+        .sa-button {
+            background-color: var(--sa-green);
+            color: var(--sa-dark); 
+            font-weight: bold; 
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.15s, transform 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .sa-button:hover {
+            background-color: #008800; 
+            transform: scale(1.02);
+        }
+
+        /* --- Custom Slider Styling --- */
+        .kerning-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 15px;
+            border-radius: 8px;
+            margin-top: 8px;
+            cursor: pointer;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--sa-dark);
+            background: linear-gradient(to right, #2d2d2d, #555555);
+        }
+
+        .kerning-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: var(--sa-gold);
+            border: 3px solid white;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            transition: background 0.1s;
+        }
+        
+        .kerning-slider:focus {
+            outline: none;
+        }
+
+        /* --- Typography Display Styles --- */
+        .kerning-display {
+            font-family: 'Arial Black', sans-serif;
+            font-size: 3rem; 
+            font-weight: 900;
+            letter-spacing: 0px; /* Initial value, overridden by JS */
+            color: white;
+            padding: 20px 0;
+            border-bottom: 2px dashed var(--sa-grey);
+            text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .target-text {
+            color: var(--sa-green);
+            letter-spacing: 2px; /* Target value for comparison */
+            text-shadow: 0 0 5px rgba(0, 168, 0, 0.5);
+        }
+
+        .user-text {
+            color: var(--sa-gold);
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+        }
+
+        .status-message {
+            font-family: 'Arial Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-height: 2rem;
+        }
+
+        @media (min-width: 640px) {
+            .kerning-display {
+                font-size: 5rem; 
+            }
+        }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <header class="text-center mb-8 w-full max-w-2xl">
+        <h1 class="gta-title text-3xl md:text-5xl">THE FONT FUGITIVE</h1>
+        <p class="gta-subtitle text-lg text-gray-400 mt-2">Mission 02: Clean Up Kerning Crimes</p>
+    </header>
+
+    <main class="w-full max-w-2xl bg-gray-800 p-6 md:p-8 rounded-lg shadow-2xl border border-gray-700">
+        
+        <!-- Mission Objective / Target Panel -->
+        <div class="mb-8 p-4 bg-gray-900 border-l-4 border-l-gray-600 rounded">
+            <h2 class="text-xl font-bold text-sa-gold mb-2">TARGET ACQUISITION: VISUAL BALANCE</h2>
+            <p class="text-gray-300 text-sm">
+                A corrupt designer has messed up the tracking on the word **GROVE**. Your mission is to adjust the letter spacing to achieve **visual harmony and legibility**. Find the perfect spacing (in pixels) to match the target's balance.
+            </p>
+        </div>
+
+        <!-- Typography Comparison -->
+        <div class="mb-8">
+            <h3 class="text-center gta-title text-base mb-2 text-sa-green">TARGET BALANCE</h3>
+            <div id="target-text" class="kerning-display target-text">GROVE</div>
+            
+            <h3 class="text-center gta-title text-base mt-6 mb-2 text-sa-gold">YOUR CORRECTION</h3>
+            <div id="user-text" class="kerning-display user-text" style="letter-spacing: 0px;">GROVE</div>
+        </div>
+
+        <!-- Kerning Slider -->
+        <div id="kerning-controls">
+            <div class="mb-6">
+                <label for="kerningSlider" class="block font-bold mb-1 text-sa-gold">LETTER SPACING (px): <span id="kerningValue">0.0</span></label>
+                <!-- Range from -5px (too tight) to +15px (too loose) -->
+                <input type="range" min="-50" max="150" value="0" step="1" id="kerningSlider" class="kerning-slider" oninput="updateKerning()">
+                <div class="flex justify-between text-xs mt-1 text-gray-400">
+                    <span>-5.0px (Tight)</span>
+                    <span>+15.0px (Loose)</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feedback and Actions -->
+        <div class="text-center mt-6">
+            <p id="status-message" class="status-message text-xl text-sa-gold mb-4">AWAITING CORRECTION...</p>
+            <button onclick="checkKerning()" class="sa-button transition duration-300 hover:scale-[1.05] w-full md:w-1/2">
+                ASSESS TYPOGRAPHIC INTEGRITY
+            </button>
+        </div>
+
+    </main>
+    
+    <!-- Navigation Back -->
+    <a href="index.html" class="sa-button mt-8 text-sm px-4 py-2 hover:bg-gray-700 hover:text-sa-gold transition duration-150" style="background-color: var(--sa-grey); border: 1px solid var(--sa-gold);">
+        &larr; BACK TO MISSION BRIEFING
+    </a>
+
+
+    <script>
+        const userText = document.getElementById('user-text');
+        const statusMessage = document.getElementById('status-message');
+        const kerningSlider = document.getElementById('kerningSlider');
+        const kerningValueDisplay = document.getElementById('kerningValue');
+
+        // Target spacing in internal units (0.1 units = 1px)
+        const TARGET_KERNING_UNITS = 20; // Represents 2.0px
+        const TOLERANCE_UNITS = 5; // Represents 0.5px (Max allowed difference)
+
+        // Function to convert slider value to display/CSS value
+        function sliderToPx(sliderValue) {
+            return (sliderValue / 10).toFixed(1);
+        }
+
+        /**
+         * Updates the user's kerning based on the slider value in real-time.
+         */
+        function updateKerning() {
+            const sliderValue = parseInt(kerningSlider.value);
+            const kerningPx = sliderToPx(sliderValue);
+
+            // Apply the letter-spacing directly to the user's text element
+            userText.style.letterSpacing = `${kerningPx}px`;
+            
+            // Update the display value
+            kerningValueDisplay.textContent = kerningPx;
+            
+            // Clear status message during adjustment
+            statusMessage.textContent = "ADJUSTING...";
+            statusMessage.classList.remove('text-sa-green');
+            statusMessage.classList.add('text-sa-gold');
+        }
+
+        /**
+         * Checks if the user's current kerning matches the target within tolerance.
+         */
+        function checkKerning() {
+            const currentUnits = parseInt(kerningSlider.value);
+            
+            // Calculate absolute difference in internal units
+            const difference = Math.abs(currentUnits - TARGET_KERNING_UNITS);
+            
+            if (difference <= TOLERANCE_UNITS) {
+                // WIN condition
+                statusMessage.textContent = "TYPOGRAPHY SECURED! PERFECT BALANCE ACHIEVED.";
+                statusMessage.classList.remove('text-sa-gold');
+                statusMessage.classList.add('text-sa-green');
+                
+                // Set the final correct spacing visually
+                userText.style.letterSpacing = sliderToPx(TARGET_KERNING_UNITS) + 'px';
+                
+                // Show custom alert message
+                alert('Mission Complete! The text is now legible and visually balanced. You have upheld the street code of design.');
+                
+            } else {
+                // FAIL condition
+                const error = sliderToPx(difference);
+                
+                let feedbackText;
+                if (difference < 10) {
+                    feedbackText = `VERY CLOSE! ONLY OFF BY $\\pm$ ${error}px. FINE TUNE.`;
+                } else if (difference < 30) {
+                    feedbackText = "SPACING IS SUB-OPTIMAL. RE-EXAMINE THE WORD'S RHYTHM.";
+                } else {
+                    feedbackText = "LEGIBILITY COMPROMISED. RETURN TO DEFAULTS AND TRY AGAIN.";
+                }
+
+                statusMessage.textContent = feedbackText;
+                statusMessage.classList.remove('text-sa-green');
+                statusMessage.classList.add('text-sa-gold');
+            }
+        }
+        
+        /**
+         * Custom alert function (as alert() is forbidden) - SA themed.
+         */
+        const SA_GREEN = '#00A800';
+        const SA_GOLD = '#FFD700';
+        const SA_DARK = '#121212';
+        const SA_GREY = '#222222';
+        
+        function alert(message) {
+            console.log("Game Message:", message);
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[2000]';
+            overlay.innerHTML = `
+                <div style="background-color: ${SA_GREY}; border-color: ${SA_GREEN};" class="p-8 rounded-lg shadow-2xl border-2 max-w-sm w-full text-center transform scale-95 transition duration-300">
+                    <h3 style="color: ${SA_GOLD};" class="text-xl font-bold mb-4">GROVE STREET DISPATCH</h3>
+                    <p class="text-white mb-6">${message}</p>
+                    <button style="background-color: ${SA_GREEN}; color: ${SA_DARK};" class="sa-button uppercase" onclick="this.parentNode.parentNode.remove()">
+                        ROGER THAT
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        // Initialize the game when the page loads
+        window.onload = updateKerning; // Ensures initial values are set
+
+    </script>
+</body>
+</html>

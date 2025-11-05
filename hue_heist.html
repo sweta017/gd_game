@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission 01: The Hue Heist</title>
+    <!-- Load Tailwind CSS for utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom GTA: San Andreas-inspired theme colors and fonts */
+        :root {
+            --sa-green: #00A800;
+            --sa-gold: #FFD700;
+            --sa-dark: #121212;
+            --sa-grey: #222222;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--sa-dark);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* --- GTA: SA Typography Style (Blocky/Gang Tag feel) --- */
+        .gta-title {
+            font-family: 'Arial Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--sa-gold);
+            text-shadow: 
+                -1px -1px 0 var(--sa-dark),
+                1px -1px 0 var(--sa-dark),
+                -1px 1px 0 var(--sa-dark),
+                1px 1px 0 var(--sa-dark); 
+        }
+
+        .sa-button {
+            background-color: var(--sa-green);
+            color: var(--sa-dark); 
+            font-weight: bold; 
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.15s, transform 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .sa-button:hover {
+            background-color: #008800; 
+            transform: scale(1.02);
+        }
+
+        /* --- Custom Slider Styling --- */
+        .color-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 15px;
+            border-radius: 8px;
+            margin-top: 8px;
+            cursor: pointer;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--sa-dark);
+        }
+
+        .color-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: var(--sa-gold);
+            border: 3px solid white;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            transition: background 0.1s;
+        }
+        
+        .color-slider:focus {
+            outline: none;
+        }
+
+        /* HUE Slider (Full Color Spectrum) */
+        #hueSlider {
+            background: linear-gradient(to right, 
+                #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+        }
+
+        /* SATURATION Slider (Grayscale to Full Color) */
+        #satSlider {
+            background: linear-gradient(to right, #808080, #ff0000); /* Placeholder gradient, JS will update */
+        }
+        
+        /* LIGHTNESS Slider (Black to White) */
+        #lightSlider {
+            background: linear-gradient(to right, black, white);
+        }
+
+        /* Color Blocks */
+        .color-block {
+            width: 100%;
+            padding-bottom: 50%; /* 2:1 aspect ratio */
+            border-radius: 8px;
+            border: 3px solid var(--sa-gold);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.2s;
+        }
+
+        .status-message {
+            font-family: 'Arial Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-height: 2rem;
+        }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <header class="text-center mb-8 w-full max-w-2xl">
+        <h1 class="gta-title text-3xl md:text-5xl">THE HUE HEIST</h1>
+        <p class="gta-subtitle text-lg text-gray-400 mt-2">Mission 01: Infiltrate the Color Palette Database</p>
+    </header>
+
+    <main class="w-full max-w-2xl bg-gray-800 p-6 md:p-8 rounded-lg shadow-2xl border border-gray-700">
+        
+        <!-- Mission Objective / Target Panel -->
+        <div class="mb-8 p-4 bg-gray-900 border-l-4 border-l-gray-600 rounded">
+            <h2 class="text-xl font-bold text-sa-gold mb-2">TARGET ACQUISITION: AESTHETIC OF TRUST</h2>
+            <p class="text-gray-300 text-sm">
+                The objective is to synthesize a color that communicates **Security, Stability, and Trust** (Blue/Cyan family) for our next campaign. 
+                Match the target color precisely to complete the heist. **Tolerance is low.**
+            </p>
+            <div class="mt-3 text-sm font-mono text-gray-500">
+                Target HSL: <span id="target-hsl-display">---</span>
+            </div>
+        </div>
+
+        <!-- Color Comparison Blocks -->
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <div>
+                <h3 class="text-center gta-title text-sm mb-2 text-gray-400">TARGET HUE</h3>
+                <div id="target-color-block" class="color-block"></div>
+            </div>
+            <div>
+                <h3 class="text-center gta-title text-sm mb-2 text-gray-400">YOUR SYNTHESIS</h3>
+                <div id="user-color-block" class="color-block" style="background-color: hsl(0, 50%, 50%);"></div>
+            </div>
+        </div>
+
+        <!-- HSL Sliders -->
+        <div id="hsl-controls">
+            <!-- HUE Slider -->
+            <div class="mb-6">
+                <label for="hueSlider" class="block font-bold mb-1 text-sa-gold">HUE (0-360): <span id="hueValue">0</span></label>
+                <input type="range" min="0" max="360" value="0" id="hueSlider" class="color-slider" oninput="updateColor()">
+            </div>
+
+            <!-- SATURATION Slider -->
+            <div class="mb-6">
+                <label for="satSlider" class="block font-bold mb-1 text-sa-gold">SATURATION (0-100%): <span id="satValue">50</span></label>
+                <input type="range" min="0" max="100" value="50" id="satSlider" class="color-slider" oninput="updateColor()">
+            </div>
+
+            <!-- LIGHTNESS Slider -->
+            <div class="mb-6">
+                <label for="lightSlider" class="block font-bold mb-1 text-sa-gold">LIGHTNESS (0-100%): <span id="lightValue">50</span></label>
+                <input type="range" min="0" max="100" value="50" id="lightSlider" class="color-slider" oninput="updateColor()">
+            </div>
+        </div>
+        
+        <!-- Feedback and Actions -->
+        <div class="text-center mt-6">
+            <p id="status-message" class="status-message text-xl text-sa-gold mb-4">AWAITING INPUT...</p>
+            <button onclick="checkMatch()" class="sa-button transition duration-300 hover:scale-[1.05] w-full md:w-1/2">
+                SYNTHESIZE & CHECK MATCH
+            </button>
+        </div>
+
+    </main>
+    
+    <!-- Navigation Back -->
+    <a href="index.html" class="sa-button mt-8 text-sm px-4 py-2 hover:bg-gray-700 hover:text-sa-gold transition duration-150" style="background-color: var(--sa-grey); border: 1px solid var(--sa-gold);">
+        &larr; BACK TO MISSION BRIEFING
+    </a>
+
+
+    <script>
+        const targetColorBlock = document.getElementById('target-color-block');
+        const userColorBlock = document.getElementById('user-color-block');
+        const statusMessage = document.getElementById('status-message');
+        const targetHslDisplay = document.getElementById('target-hsl-display');
+
+        const hueSlider = document.getElementById('hueSlider');
+        const satSlider = document.getElementById('satSlider');
+        const lightSlider = document.getElementById('lightSlider');
+
+        const hueValue = document.getElementById('hueValue');
+        const satValue = document.getElementById('satValue');
+        const lightValue = document.getElementById('lightValue');
+
+        // Target color for "Aesthetic of Trust" (Blue/Cyan)
+        const TARGET_H = 200;
+        const TARGET_S = 80;
+        const TARGET_L = 40;
+        const TOLERANCE = 5; // Max allowed difference in any HSL value to win
+
+        /**
+         * Sets up the initial game state.
+         */
+        function initializeGame() {
+            // Set the target color display
+            targetColorBlock.style.backgroundColor = `hsl(${TARGET_H}, ${TARGET_S}%, ${TARGET_L}%)`;
+            targetHslDisplay.textContent = `H: ${TARGET_H}, S: ${TARGET_S}%, L: ${TARGET_L}%`;
+
+            // Initialize sliders to a neutral starting point
+            hueSlider.value = 0;
+            satSlider.value = 50;
+            lightSlider.value = 50;
+
+            // Ensure the initial colors are rendered
+            updateColor();
+        }
+        
+        /**
+         * Updates the user's color block and slider values in real-time.
+         */
+        function updateColor() {
+            const h = hueSlider.value;
+            const s = satSlider.value;
+            const l = lightSlider.value;
+
+            // Update display values
+            hueValue.textContent = h;
+            satValue.textContent = s;
+            lightValue.textContent = l;
+
+            const userHSL = `hsl(${h}, ${s}%, ${l}%)`;
+            userColorBlock.style.backgroundColor = userHSL;
+            
+            // Dynamically update the Saturation slider background to match the current hue
+            satSlider.style.backgroundImage = `linear-gradient(to right, hsl(${h}, 0%, ${l}%), hsl(${h}, 100%, ${l}%))`;
+            // Dynamically update the Lightness slider background to show the effect of L at current H/S
+            lightSlider.style.backgroundImage = `linear-gradient(to right, hsl(${h}, ${s}%, 0%), hsl(${h}, ${s}%, 50%), hsl(${h}, ${s}%, 100%))`;
+        }
+
+        /**
+         * Checks if the user's current HSL values match the target within tolerance.
+         */
+        function checkMatch() {
+            const h = parseInt(hueSlider.value);
+            const s = parseInt(satSlider.value);
+            const l = parseInt(lightSlider.value);
+            
+            // Calculate absolute differences
+            const diffH = Math.abs(h - TARGET_H);
+            const diffS = Math.abs(s - TARGET_S);
+            const diffL = Math.abs(l - TARGET_L);
+            
+            // Check if all differences are within the allowed tolerance
+            if (diffH <= TOLERANCE && diffS <= TOLERANCE && diffL <= TOLERANCE) {
+                // WIN condition
+                statusMessage.textContent = "HEIST SUCCESSFUL! TARGET COLOR ACQUIRED.";
+                statusMessage.classList.remove('text-sa-gold');
+                statusMessage.classList.add('text-sa-green');
+                
+                // Show custom alert message
+                alert('Mission Complete! Color security bypassed. The Aesthetic of Trust is now ours. Report back to the briefing.');
+                
+            } else {
+                // FAIL condition
+                const totalError = diffH + diffS + diffL;
+                
+                let feedbackText;
+                if (totalError < 30) {
+                    feedbackText = "CLOSE, BUT NOT CLEAN ENOUGH. ADJUST YOUR HUE AND SATURATION.";
+                } else if (totalError < 60) {
+                    feedbackText = "AESTHETIC DEVIATION DETECTED. RECALIBRATE. ($\pm$ H: " + diffH + ", S: " + diffS + ", L: " + diffL + ")";
+                } else {
+                    feedbackText = "STREET CODE VIOLATION. WAY OFF THE TARGET. TRY AGAIN.";
+                }
+
+                statusMessage.textContent = feedbackText;
+                statusMessage.classList.remove('text-sa-green');
+                statusMessage.classList.add('text-sa-gold'); // Use gold for warning/error
+            }
+        }
+        
+        /**
+         * Custom alert function (as alert() is forbidden) - SA themed.
+         */
+        const SA_GREEN = '#00A800';
+        const SA_GOLD = '#FFD700';
+        const SA_DARK = '#121212';
+        const SA_GREY = '#222222';
+        
+        function alert(message) {
+            console.log("Game Message:", message);
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[2000]';
+            overlay.innerHTML = `
+                <div style="background-color: ${SA_GREY}; border-color: ${SA_GREEN};" class="p-8 rounded-lg shadow-2xl border-2 max-w-sm w-full text-center transform scale-95 transition duration-300">
+                    <h3 style="color: ${SA_GOLD};" class="text-xl font-bold mb-4">GROVE STREET DISPATCH</h3>
+                    <p class="text-white mb-6">${message}</p>
+                    <button style="background-color: ${SA_GREEN}; color: ${SA_DARK};" class="sa-button uppercase" onclick="this.parentNode.parentNode.remove()">
+                        ROGER THAT
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        // Initialize the game when the page loads
+        window.onload = initializeGame;
+
+    </script>
+</body>
+</html>
